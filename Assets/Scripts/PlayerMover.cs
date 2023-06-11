@@ -9,6 +9,9 @@ public class PlayerMover : MonoBehaviour
     [SerializeField] float walkSpeed;
     [SerializeField] float runSpeed;
     [SerializeField] float jumpSpeed;
+    [SerializeField] FootStepSound footStepSound;
+    [SerializeField] float walkStepRange;
+    [SerializeField] float runStepRange;
 
     private CharacterController controller;
     private Animator anim;
@@ -35,6 +38,7 @@ public class PlayerMover : MonoBehaviour
         StopCoroutine(jumpRoutine);
     }
 
+    float lastStepTime = 0.5f;
     Coroutine moveRoutine;
     private IEnumerator MoveRoutine()
     {
@@ -66,6 +70,13 @@ public class PlayerMover : MonoBehaviour
 
             Quaternion lookRotation = Quaternion.LookRotation(fowardVec * moveDir.z + rightVec * moveDir.x);
             transform.rotation = Quaternion.Lerp(transform.rotation, lookRotation, 0.2f);
+
+            lastStepTime -= Time.deltaTime;
+            if (lastStepTime < 0)
+            {
+                lastStepTime = 0.5f;
+                GenerateFootStepSound();
+            }
             yield return null;
         }
     }
@@ -106,5 +117,18 @@ public class PlayerMover : MonoBehaviour
     {
         RaycastHit hit;
         return Physics.SphereCast(transform.position + Vector3.up * 1, 0.5f, Vector3.down, out hit, 0.5f);
+    }
+
+    private void GenerateFootStepSound()
+    {
+        FootStepSound footStep = Instantiate(footStepSound, transform.position, Quaternion.identity);
+        footStep.range = walk ? walkStepRange : runStepRange;
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawWireSphere(transform.position, walkStepRange);
+        Gizmos.DrawWireSphere(transform.position, runStepRange);
     }
 }
