@@ -6,6 +6,8 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(CharacterController))]
 public class PlayerMover : MonoBehaviour
 {
+    [SerializeField] bool debug;
+
     [SerializeField] float walkSpeed;
     [SerializeField] float runSpeed;
     [SerializeField] float jumpSpeed;
@@ -127,6 +129,9 @@ public class PlayerMover : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
+        if (!debug)
+            return;
+
         Gizmos.color = Color.cyan;
         Gizmos.DrawWireSphere(transform.position, walkStepRange);
         Gizmos.DrawWireSphere(transform.position, runStepRange);
