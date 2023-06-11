@@ -35,7 +35,20 @@ public class PlayerMover : MonoBehaviour
     {
         while (true)
         {
-            controller.Move(moveDir * moveSpeed * Time.deltaTime);
+            if (moveDir.sqrMagnitude <= 0)
+            {
+                yield return null;
+                continue;
+            }
+
+            Vector3 fowardVec = new Vector3(Camera.main.transform.forward.x, 0f, Camera.main.transform.forward.z).normalized;
+            Vector3 rightVec = new Vector3(Camera.main.transform.right.x, 0f, Camera.main.transform.right.z).normalized;
+
+            controller.Move(fowardVec * moveDir.z * moveSpeed * Time.deltaTime);
+            controller.Move(rightVec * moveDir.x * moveSpeed * Time.deltaTime);
+
+            Quaternion lookRotation = Quaternion.LookRotation(fowardVec * moveDir.z + rightVec * moveDir.x);
+            transform.rotation = Quaternion.Lerp(transform.rotation, lookRotation, 0.2f);
             yield return null;
         }
     }
