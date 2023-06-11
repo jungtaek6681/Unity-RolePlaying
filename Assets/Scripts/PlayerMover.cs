@@ -6,16 +6,21 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(CharacterController))]
 public class PlayerMover : MonoBehaviour
 {
-    [SerializeField] float moveSpeed;
+    [SerializeField] float walkSpeed;
+    [SerializeField] float runSpeed;
     [SerializeField] float jumpSpeed;
 
     private CharacterController controller;
+    private Animator anim;
     private Vector3 moveDir;
+    private float curSpeed;
     private float ySpeed = 0;
+    private bool walk = false;
 
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
+        anim = GetComponent<Animator>();
     }
 
     private void OnEnable()
@@ -37,6 +42,8 @@ public class PlayerMover : MonoBehaviour
         {
             if (moveDir.sqrMagnitude <= 0)
             {
+                curSpeed = Mathf.Lerp(curSpeed, 0, 0.1f);
+                anim.SetFloat("MoveSpeed", curSpeed);
                 yield return null;
                 continue;
             }
@@ -44,8 +51,18 @@ public class PlayerMover : MonoBehaviour
             Vector3 fowardVec = new Vector3(Camera.main.transform.forward.x, 0f, Camera.main.transform.forward.z).normalized;
             Vector3 rightVec = new Vector3(Camera.main.transform.right.x, 0f, Camera.main.transform.right.z).normalized;
 
-            controller.Move(fowardVec * moveDir.z * moveSpeed * Time.deltaTime);
-            controller.Move(rightVec * moveDir.x * moveSpeed * Time.deltaTime);
+            if (walk)
+            {
+                curSpeed = Mathf.Lerp(curSpeed, walkSpeed, 0.1f);
+            }
+            else
+            {
+                curSpeed = Mathf.Lerp(curSpeed, runSpeed, 0.1f);
+            }
+
+            controller.Move(fowardVec * moveDir.z * curSpeed * Time.deltaTime);
+            controller.Move(rightVec * moveDir.x * curSpeed * Time.deltaTime);
+            anim.SetFloat("MoveSpeed", curSpeed);
 
             Quaternion lookRotation = Quaternion.LookRotation(fowardVec * moveDir.z + rightVec * moveDir.x);
             transform.rotation = Quaternion.Lerp(transform.rotation, lookRotation, 0.2f);
@@ -78,6 +95,11 @@ public class PlayerMover : MonoBehaviour
     {
         if (GroundCheck())
             ySpeed = jumpSpeed;
+    }
+
+    private void OnWalk(InputValue value)
+    {
+        walk = value.isPressed;
     }
 
     private bool GroundCheck()
