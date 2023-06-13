@@ -13,4 +13,9 @@ public class TitleScene : BaseScene
     {
         Debug.Log("TitleScene Release");
     }
+
+    public void OnStartButton()
+    {
+        GameManager.Scene.LoadScene("GameScene");
+    }
 }
