@@ -42,8 +42,18 @@ public class SceneManager : MonoBehaviour
         AsyncOperation oper = UnitySceneManager.LoadSceneAsync(sceneName);
         while (!oper.isDone)
         {
-            loadingUI.SetProgress(oper.progress);
+            loadingUI.SetProgress(Mathf.Lerp(0.0f, 0.5f, oper.progress));
             yield return null;
+        }
+
+        if (CurScene != null)
+        {
+            CurScene.LoadAsync();
+            while (CurScene.progress < 1f)
+            {
+                loadingUI.SetProgress(Mathf.Lerp(0.5f, 1f, CurScene.progress));
+                yield return null;
+            }
         }
 
         loadingUI.SetProgress(1f);
